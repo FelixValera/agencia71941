@@ -47,4 +47,30 @@ Route::get('/vista',function()
 	]);
 });
 
+//agragando la nuevas rutas creada en clase3
+
+Route::view('/','dashboard');
+
+Route::get('/regiones',function(){
+
+	$regiones = DB::select('SELECT * FROM regiones');
+
+	return view('regiones',['regiones'=>$regiones]);
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
