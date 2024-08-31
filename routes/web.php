@@ -8,7 +8,7 @@ use PhpParser\Node\Stmt\TryCatch;
     return view('welcome');
 });*/
 
-
+/*
 Route::view('/saludo','vista'); //metodo retorna una vista
 
 Route::get('/datos',function()  //retorna accion
@@ -48,6 +48,7 @@ Route::get('/vista',function()
 		
 	]);
 });
+*/
 
 //agragando la nuevas rutas creada en clase3
 Route::view('/','dashboard');
@@ -64,13 +65,6 @@ Route::get('/regiones',function(){
 	$regiones = DB::select('SELECT * FROM regiones Order by idRegion');
 
 	return view('regiones',['regiones'=>$regiones]);
-});
-
-Route::get('/destinos',function(){
-
-	$destinos = DB::table('destinos')->orderby('idDestino','asc')->select('idDestino','aeropuerto','precio')->get();
-	
-	return view('destinos',['destinos'=>$destinos]);
 });
 
 Route::post('/region/store',function(){
@@ -135,6 +129,147 @@ Route::post('/region/update',function(){
 			'css'=>'red'
 		]);
 	}
+});
+
+Route::get('/region/delete/{id}',function(string $id){
+
+	try{
+
+		DB::table('regiones')->where('idRegion',$id)->delete();
+
+		return redirect('/regiones')->with([
+			'mensaje'=>'Eliminado correctamente :)',
+			'css'=>'green'
+		]);
+	}
+	catch(throwable $th){
+		
+		return redirect('/regiones')->with([
+			'mensaje'=>'No se pudo eliminar :(',
+			'css'=>'red'
+		]);
+	}
+});
+
+//rutas de la vista destinos
+
+Route::get('/destinos',function(){
+
+	//$destinos = DB::table('destinos')->orderby('idDestino','asc')->select('idDestino','aeropuerto','precio')->get();
+	$destinos = DB::table('destinos as d')->join('regiones as r','d.idRegion','=','r.idRegion')
+	->select('idDestino','aeropuerto','precio','r.nombre')->get();
+	
+	return view('destinos',['destinos'=>$destinos]);
+});
+
+Route::get('/destino/create',function(){
+
+	$regiones = DB::table('regiones')->get();
+
+	return view('destinoCreate',['regiones'=>$regiones]);
+});
+
+Route::post('/destino/store',function(){
+
+	$aeropuerto = request()->aeropuerto;
+	$precio = request()->precio;
+	$idRegion = request()->idRegion;
+
+	try{
+
+		DB::table('destinos')->insert(
+			[
+				'aeropuerto'=>$aeropuerto,
+				'precio'=>$precio,
+				'idRegion'=>$idRegion
+			]
+		);
+
+		return redirect('/destinos')->with(
+			[
+				'mensaje'=>$aeropuerto.' Agregado Correctamente :)',
+				'css'=>'green'
+			]
+		);
+	}
+	catch(Throwable $th){
+
+		return redirect('/destinos')->with(
+			[
+				'mensaje'=>'No se pudo agregar el destino :(',
+				'css'=>'red'
+			]
+		);
+	}
+});
+
+Route::get('/destino/edit/{id}',function($id){
+
+	$destino = DB::table('destinos as d')->join('regiones as r','d.idRegion','=','r.idRegion')
+	->where('idDestino',$id)->select('idDestino','aeropuerto','precio','d.idRegion','r.nombre')->get();
+
+	$regiones = DB::table('regiones')->get();
+	
+	return view('/destinoEdit',['destino'=>$destino[0],'regiones'=>$regiones]);
+});
+
+Route::post('/destino/update',function(){
+
+	$idDestino = request()->idDestino;
+	$aeropuerto = request()->aeropuerto;
+	$precio = request()->precio;
+	$idRegion = request()->idRegion;
+
+	try{
+
+		DB::table('destinos')->where('idDestino',$idDestino)->update([
+			'aeropuerto'=>$aeropuerto,
+			'precio'=>$precio,
+			'idRegion'=>$idRegion
+		]);
+
+		return redirect('/destinos')->with(
+			[
+				'mensaje'=>'Destino actualizado correctamente :)',
+				'css'=>'green'
+			]
+		);
+	}
+	catch(Throwable $th){
+		
+		return redirect('/destinos')->with(
+			[
+				'mensaje'=>'No se pudo actualizar el destino :(',
+				'css'=>'red'
+			]
+		);
+	}
+
+});
+
+Route::get('/destino/delete/{id}',function($id){
+
+	try{
+
+		DB::table('destinos')->where('idDestino',$id)->delete();
+
+		return redirect('/destinos')->with(
+			[
+				'mensaje'=>'Eliminado correctamente :)',
+				'css'=>'green'
+			]
+		);
+	}
+	catch(Throwable $th){
+
+		return redirect('/destinos')->with(
+			[
+				'mensaje'=>'No se pudo eliminar  :(',
+				'css'=>'red'
+			]
+		);
+	}
+
 });
 
 
